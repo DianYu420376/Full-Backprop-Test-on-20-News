@@ -5,7 +5,7 @@
 
 
 '''
-Training a semi supervised one layer NMF on 20 news group dataset, with 90% of observing data
+Training a semi supervised one layer NMF on 20 news group dataset, with 50% of observing data
 '''
 
 
@@ -29,7 +29,7 @@ import numpy as np
 from twenty_news_group_data_loading import data, Y, L20, L50, L90, sparsedata_cr_entr, sparsedata_L2#, get_whole_output
 
 
-# In[19]:
+# In[53]:
 
 
 # Define the network
@@ -40,18 +40,18 @@ lambd = 100
 net = Deep_NMF([m, k], c)
 loss_func = Energy_Loss_Func(lambd = lambd, classification_type = 'L2')
 criterion = Fro_Norm()
-dataset = sparsedata_L2(data*1000, Y, L90)
+dataset = sparsedata_L2(data*1000, Y, L50)
 
 
-# In[99]:
+# In[54]:
 
 
 # Training process!
-print('into the training session')
+
 # setting training parameters
 batchsize = 100
 epoch = 7
-lr_nmf = 10000
+lr_nmf = 5000
 lr_cl = 10
 loss_lst = []
 total_loss_lst = []
@@ -60,30 +60,33 @@ for epo in range(epoch):
     dataloader = torch.utils.data.DataLoader(dataset, batch_size = batchsize, shuffle = True)
     total_loss = 0
     for (i, (inputs, label,l_batch)) in enumerate(dataloader):
-        # train the lsqnonneg layers
         inputs = inputs.view([inputs.shape[0], inputs.shape[2]])
         label = label.view([label.shape[0], -1])
         l_batch = l_batch.view([l_batch.shape[0],-1])
-        inputs, label = Variable(inputs), Variable(label)
-        net.zero_grad()
-        S_lst,pred = net(inputs)
-        loss = loss_func(net, inputs, S_lst,pred,label,l_batch)
-        loss.backward()
-        loss_lst.append(loss.data)
+        # train the lsqnonneg layers
+        for k in range(5):
+            inputs, label = Variable(inputs), Variable(label)
+            S_lst,pred = net(inputs)
+            loss = loss_func(net, inputs, S_lst,pred,label,l_batch)
+            loss.backward()
+            loss_lst.append(loss.data)
+            print('training the nmf layer')
+            print(loss.data)
+            for A in net.lsqnonneglst.parameters():
+                A.data = A.data.sub_(lr_nmf*A.grad.data)
+                A.data = A.data.clamp(min = 0)
         total_loss += loss.data
-        print('training the nmf layer')
-        print(loss.data)
-        for A in net.lsqnonneglst.parameters():
-            A.data = A.data.sub_(lr_nmf*A.grad.data)
-            A.data = A.data.clamp(min = 0)
 #             A.requires_grad = False
         # train the linear classifier
-        for k in range(20):
+        print('training the classifier')
+        for k in range(1000):
             net.zero_grad()
-            pred = torch.mm(S_lst[-1].data, net.linear.weight.t())
-            loss = criterion(l_batch*pred,l_batch*label)
+            pred = net.linear(S_lst[-1].data)
+            loss = criterion(l_batch*pred, l_batch*label)
             loss = loss*torch.numel(l_batch)/torch.sum(l_batch)
             loss.backward()
+            if (k+1) % 100 == 0:
+                print(loss.data)
             for A in net.linear.parameters():
                 A.data = A.data.sub_(lr_cl*A.grad.data)
 #         for A in net.lsqnonneglst.parameters():
@@ -92,7 +95,7 @@ for epo in range(epoch):
     total_loss_lst.append(total_loss)
 
 
-# In[8]:
+# In[25]:
 
 
 # Doing forward propagation on the whole dataset, remember to SAVE S and prod!
@@ -122,14 +125,14 @@ def get_whole_output(net, dataset, param_lst = None):
     return history
 
 
-# In[21]:
+# In[26]:
 
 
 print('get_whole_output')
 history = get_whole_output(net, dataset)
 
 
-# In[51]:
+# In[ ]:
 
 
 print('into the saving session')
