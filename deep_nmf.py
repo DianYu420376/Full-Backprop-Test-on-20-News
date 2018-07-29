@@ -1,14 +1,14 @@
 
 # coding: utf-8
 
-# In[9]:
+# In[1]:
 
 
 # Date:2018.07.21
 # Author: Runyu Zhang
 
 
-# In[10]:
+# In[2]:
 
 
 import torch
@@ -22,7 +22,7 @@ import numpy as np
 import torch.nn.functional as F
 
 
-# In[11]:
+# In[3]:
 
 
 class Deep_NMF(nn.Module):
@@ -58,7 +58,7 @@ class Deep_NMF(nn.Module):
         
 
 
-# In[17]:
+# In[4]:
 
 
 class Energy_Loss_Func(nn.Module):
@@ -94,7 +94,44 @@ class Energy_Loss_Func(nn.Module):
             return total_reconstructionloss + self.lambd*classificationloss
 
 
-# In[18]:
+# In[4]:
+
+
+class Energy_Loss_Func_by_Layer(nn.Module):
+    '''
+    Defining the energy loss function as in the paper deep NMF, here we are doing classification on each
+    layer.
+    
+    initial parameter: 
+        lambd: the regularization parameter, defining how important the classification error is.
+        classification_type: string, 'L2' or 'CrossEntropy'. Default 'CrossEntropy'
+    '''
+    def __init__(self,lambd = 0, classification_type = 'CrossEntropy'):
+        super(Energy_Loss_Func, self).__init__()
+        self.lambd = lambd
+        self.classification_type = classification_type
+        self.criterion1 = ReconstructionLoss()
+        if classification_type == 'L2':
+            self.criterion2 = ClassificationLossL2()
+        else:
+            self.criterion2 = ClassificationLossCrossEntropy()
+            
+    def forward(self, net, X, S_lst, pred = None, label = None, L = None):
+        total_reconstructionloss = self.criterion1(X, S_lst[0], net.lsqnonneglst[0].A)
+        depth = net.depth
+        for i in range(1,depth-1):
+            total_reconstructionloss += self.criterion1(S_lst[i-1], S_lst[i], net.lsqnonneglst[i].A)
+        if pred is None:
+            # unsupervised case
+            assert(label is None and L is None)
+            return total_reconstructionloss
+        else:
+            # fully supervised case and semisupervised case
+            classificationloss = self.criterion2(pred, label, L)
+            return total_reconstructionloss + self.lambd*classificationloss
+
+
+# In[10]:
 
 
 ## Defining all kinds of loss functions that is needed
@@ -145,7 +182,11 @@ class ClassificationLossL2(nn.Module):
             classificationloss = self.criterion(Y_pred, Y)
             return classificationloss
         else:
+            num_samples = L.shape[0]
+            num_observed = torch.sum(L[:,0])
             classificationloss = self.criterion(L*Y_pred, L*Y)
+            if num_observed != 0:
+                classificationloss = classificationloss*num_samples/num_observed
             return classificationloss
 
 class ClassificationLossCrossEntropy(nn.Module):
