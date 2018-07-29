@@ -148,13 +148,13 @@ class sparsedata_L2(torch.utils.data.Dataset):
 
 # testing the dataset class
 import scipy.io as sio
-directory = 'C:/Users/rzhang/Dropbox/Deep NMF/Code/Eli code/20_news/known_labels'
+directory ='known_labels'
 L = sio.loadmat(directory)
 L20 = L.get('L20').T
 L50 = L.get('L50').T
 L90 = L.get('L90').T
 l = L20[:,0]
-directory_Y = 'C:/Users/rzhang/Dropbox/Deep NMF/Code/Eli code/20_news/Y'
+directory_Y = 'Y'
 Y = sio.loadmat(directory_Y)
 Y = Y.get('Y').T
 

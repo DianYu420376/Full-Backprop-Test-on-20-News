@@ -15,7 +15,6 @@ Training a semi supervised one layer NMF on 20 news group dataset, with 90% of o
 # import package
 import torch
 from torch.autograd import Variable
-import Ipynb_importer
 from deep_nmf import Deep_NMF, Energy_Loss_Func
 from writer import Writer
 from matplotlib import pyplot as plt
@@ -139,15 +138,4 @@ def get_whole_output(net, dataset, param_lst = None):
         history.add_tensor('pred', pred)
     return history
 
-
-# In[ ]:
-
-
-history = get_whole_output(net, dataset)
-
-
-# In[2]:
-
-
-A_np = np.load('semi_90_A')
 

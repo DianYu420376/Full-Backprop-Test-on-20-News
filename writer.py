@@ -72,30 +72,3 @@ class Writer:
         
 
 
-# In[33]:
-
-import numpy as np
-S_lst = np.load('20_news_group_S_lst.npy')
-
-
-# In[50]:
-
-S_lst = [S_lst[i][0] for i in range(len(S_lst))]
-history = Writer()
-history.tensor_dict['output'] = S_lst
-
-
-# In[52]:
-
-S = history.cat_lst('output')
-
-
-# In[53]:
-
-S.shape
-
-
-# In[ ]:
-
-
-
