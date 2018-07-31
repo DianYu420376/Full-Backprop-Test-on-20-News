@@ -14,6 +14,8 @@ def get_whole_output(net, dataset, param_lst = None):
     S
     pred (optional)
     '''
+    for A in net.parameters():
+        A.requires_grad = False
     history = Writer()
     # initialize the network with certain initial value
     if param_lst is not None:
@@ -45,6 +47,8 @@ def get_whole_output(net, dataset, param_lst = None):
     S_lst = history.get('output')
     S = torch.cat(S_lst,0)
     pred_lst = history.get('pred')
+    for A in net.parameters():
+        A.requires_grad = True
     if pred_lst is not None:
         pred_lst = history.get('pred')
         pred = torch.cat(pred_lst, 0)
@@ -87,5 +91,3 @@ def calc_reconstruction_error(X,A,S):
         fro_error += temp**2
         fro_X += temp_X**2
     return fro_error, fro_X
-
-

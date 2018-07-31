@@ -1,6 +1,7 @@
 # coding: utf-8
 
-# In[1]:
+# In[16]:
+
 
 '''
 Training a fully supervised one layer NMF on 20 news group dataset
@@ -10,9 +11,11 @@ save_PATH = 'saved_data/'
 save_filename = 'supervised_one_layer'
 
 
-# In[2]:
+# In[17]:
+
 
 # import package
+get_ipython().run_line_magic('load_ext', 'memory_profiler')
 import torch
 from torch.autograd import Variable
 import Ipynb_importer
@@ -23,13 +26,15 @@ import numpy as np
 from auxillary_functions import *
 
 
-# In[3]:
+# In[18]:
+
 
 # load the dataset for twenty news
 from twenty_news_group_data_loading import data, Y, target,L20, L50, L90, sparsedata_cr_entr, sparsedata_L2#, get_whole_output
 
 
-# In[17]:
+# In[19]:
+
 
 # Define the network 
 m = data.shape[1]
@@ -42,13 +47,31 @@ data_input = data*1000
 dataset = sparsedata_L2(data_input, Y)
 criterion = Fro_Norm()
 
+<<<<<<< HEAD
 # In[18]:
+=======
+
+# In[12]:
+
+
+# try initializing the network with the unsupervised version
+#A = np.load(save_PATH + '20_news_group_A.npy')
+#net.lsqnonneglst[0].A.data = torch.from_numpy(A)
+
+
+# In[ ]:
+
+>>>>>>> 60bf010d18c1ecf7cb6fe966dd417c2014c45818
 
 # Training process!
 
 # setting training parameters
 batchsize = 100
+<<<<<<< HEAD
 epoch = 7
+=======
+epoch = 4
+>>>>>>> 60bf010d18c1ecf7cb6fe966dd417c2014c45818
 lr_nmf = 7000
 lr_cl = 5
 loss_lst = []
@@ -60,9 +83,12 @@ for epo in range(epoch):
         inputs = inputs.view([inputs.shape[0], inputs.shape[2]])
         label = label.view([label.shape[0], -1])
         inputs, label = Variable(inputs), Variable(label)
+        #%memit
         # train the linear classifier
         S_lst, pred = net(inputs)
         print('training the classifier')
+        for A in net.lsqnonneglst.parameters():
+            A.requires_grad = False
         for k in range(100):
             net.zero_grad()
             pred = net.linear(S_lst[-1].data)
@@ -71,7 +97,11 @@ for epo in range(epoch):
             #print(loss.data)
             for A in net.linear.parameters():
                 A.data = A.data.sub_(lr_cl*A.grad.data)
-        # train the lsqnonneg layers
+#         %memit
+        for A in net.lsqnonneglst.parameters():
+            A.requires_grad = True
+       #train the lsqnonneg layers
+        net.zero_grad()
         S_lst,pred = net(inputs)
         net.zero_grad()
         loss = loss_func(inputs, S_lst,list(net.lsqnonneglst.parameters()),pred,label)
@@ -83,17 +113,20 @@ for epo in range(epoch):
         for A in net.lsqnonneglst.parameters():
             A.data = A.data.sub_(lr_nmf*A.grad.data)
             A.data = A.data.clamp(min = 0)
+            A.requires_grad = False
     print('epoch = ', epo, '\n', total_loss)
 
 
 # In[19]:
+
 
 # save the data
 np.savez(save_PATH + save_filename,
          param_lst = list(net.parameters()), loss_lst = loss_lst)
 
 
-# In[20]:
+# In[13]:
+
 
 # plot the loss curve
 #plt.plot(loss_lst)
@@ -113,14 +146,14 @@ print(fro_error/fro_X)
 
 # In[ ]:
 
+
 # save the data
+<<<<<<< HEAD
 print(S)
 print(pred)
 np.savez(save_PATH + save_filename, S = S, pred = pred ,
+=======
+np.savez(save_PATH + save_filename, S = S, pred = pred,
+>>>>>>> 60bf010d18c1ecf7cb6fe966dd417c2014c45818
          param_lst = list(net.parameters()), loss_lst = loss_lst)
-
-
-# In[ ]:
-
-
 
