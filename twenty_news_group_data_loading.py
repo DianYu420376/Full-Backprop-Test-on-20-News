@@ -88,7 +88,7 @@ class sparsedata_cr_entr(torch.utils.data.Dataset):
         if self.transform is not None:
             inputs = self.transform(inputs)
         target = self.label[index]
-        inputs = torch.Tensor(inputs.todense()).double()
+        inputs = torch.todense(inputs.todense()).double()
         if type(index) == int:
             target = torch.Tensor([target]).long()
         else:
@@ -125,7 +125,7 @@ class sparsedata_L2(torch.utils.data.Dataset):
         if self.transform is not None:
             inputs = self.transform(inputs)
         target = self.Y[index,:]
-        inputs = torch.Tensor(inputs.todense()).double()
+        inputs = torch.from_numpy(inputs.todense()).double()
         if type(index) == int:
             target = torch.Tensor([target]).double()
         else:

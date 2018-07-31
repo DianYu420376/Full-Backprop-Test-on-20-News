@@ -15,12 +15,9 @@ Training a semi supervised one layer NMF on 20 news group dataset, with 90% of o
 # import package
 import torch
 from torch.autograd import Variable
-<<<<<<< HEAD
 from deep_nmf import Deep_NMF, Energy_Loss_Func
-=======
 import Ipynb_importer
 from deep_nmf import Deep_NMF, Energy_Loss_Func, Fro_Norm
->>>>>>> 6b9c5d4e6df0ebabaf14eb4c95decece589e7a8d
 from writer import Writer
 from matplotlib import pyplot as plt
 import numpy as np
@@ -34,7 +31,7 @@ from twenty_news_group_data_loading import data, Y, L20, L50, L90, sparsedata_cr
 
 
 # In[19]:
-
+np.save('test_nohup',np.array([1,2,3,4]))
 
 # Define the network
 m = data.shape[1]
@@ -54,7 +51,7 @@ dataset = sparsedata_L2(data*1000, Y, L90)
 print('into the training session')
 # setting training parameters
 batchsize = 100
-epoch = 7
+epoch = 12
 lr_nmf = 10000
 lr_cl = 10
 loss_lst = []
@@ -126,8 +123,7 @@ def get_whole_output(net, dataset, param_lst = None):
     return history
 
 
-<<<<<<< HEAD
-=======
+
 # In[21]:
 
 
@@ -156,4 +152,3 @@ save_PATH = 'saved_data/'
 np.savez(save_PATH+'one_layer_semi_90', A = A_np, S = S_np, B = B_np, pred = pred_np,
          loss_lst = loss_lst, total_loss_lst = total_loss_lst)
 
->>>>>>> 6b9c5d4e6df0ebabaf14eb4c95decece589e7a8d

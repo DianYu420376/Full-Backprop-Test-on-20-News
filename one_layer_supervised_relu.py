@@ -76,7 +76,7 @@ criterion = Fro_Norm()
 # training process
 # setting training parameters
 batchsize = 100
-epoch = 4
+epoch = 2
 lr_nmf = 7000
 lr_cl = 10
 loss_lst = []
@@ -102,15 +102,17 @@ for epo in range(epoch):
                 A.data = A.data.sub_(lr_cl*A.grad.data)
         # train the lsqnonneg layers
         S_lst,pred = net(inputs)
-        loss = loss_func(net, inputs, S_lst,pred,label)
+        loss = loss_func(inputs, S_lst,list(net.deep_nmf.parameters()), pred,label)
         loss.backward()
         loss_lst.append(loss.data)
         total_loss += loss.data
         print('training the nmf layer')
         print(loss.data)
-        for A in net.lsqnonneglst.parameters():
+        for A in net.deep_nmf.parameters():
             A.data = A.data.sub_(lr_nmf*A.grad.data)
             A.data = A.data.clamp(min = 0)
+        if i > 2:
+            break
     print('epoch = ', epo, '\n', total_loss)
 
 
@@ -124,8 +126,8 @@ np.savez(save_PATH + save_filename,
 # In[ ]:
 
 # plot the loss curve
-plt.plot(loss_lst)
-plt.show()
+#plt.plot(loss_lst)
+#plt.show()
 # Get the whole output of the whole dataset (running forward propagation on the whole dataset)
 S, pred = get_whole_output(net, dataset)
 # Get the accuracy
@@ -133,7 +135,7 @@ accuracy = torch.sum(torch.argmax(pred, 1)
                      == torch.argmax(torch.from_numpy(Y),1))/len(dataset)
 print(accuracy)
 # Get the reconstruction error
-A_np = net.lsqnonneglst[0].A.data.numpy()
+A_np = net.deep_nmf.lsqnonneglst[0].A.data.numpy()
 S_np = S.data.numpy()
 fro_error, fro_X = calc_reconstruction_error(data_input, A_np, S_np)
 print(fro_error/fro_X)
@@ -142,6 +144,6 @@ print(fro_error/fro_X)
 # In[ ]:
 
 # save the data
-np.savez(save_PATH + save_filename, S = S, pred = pred,
+np.savez(save_PATH + save_filename, S_lst =[S], pred = [pred],
          param_lst = list(net.parameters()), loss_lst = loss_lst)
 

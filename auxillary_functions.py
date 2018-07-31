@@ -22,7 +22,7 @@ def get_whole_output(net, dataset, param_lst = None):
     # start to forward propagate, 100 at a time
     n = len(dataset)
     if n%100 == 0:
-        batch_num = n/100
+        batch_num = n//100
     else:
         batch_num = n//100 + 1
     print('batch_num = ', batch_num, '\n')
@@ -72,7 +72,7 @@ def calc_reconstruction_error(X,A,S):
     fro_X = 0
     n = X.shape[0]
     if n%100 == 0:
-        batch_num = n/100
+        batch_num = n//100
     else:
         batch_num = n//100 + 1
     for i in range(batch_num):

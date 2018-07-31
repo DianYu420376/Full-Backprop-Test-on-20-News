@@ -1,4 +1,3 @@
-
 # coding: utf-8
 
 # In[1]:
@@ -43,27 +42,15 @@ data_input = data*1000
 dataset = sparsedata_L2(data_input, Y)
 criterion = Fro_Norm()
 
-
-# In[14]:
-
-# try initializing the network with the unsupervised version
-A = np.load(save_PATH + '20_news_group_A.npy')
-
-
-# In[15]:
-
-net.lsqnonneglst[0].A.data = torch.from_numpy(A)
-
-
 # In[18]:
 
 # Training process!
 
 # setting training parameters
-batchsize = 20
-epoch = 4
+batchsize = 100
+epoch = 7
 lr_nmf = 7000
-lr_cl = 10
+lr_cl = 5
 loss_lst = []
 # train!
 for epo in range(epoch):
@@ -86,7 +73,8 @@ for epo in range(epoch):
                 A.data = A.data.sub_(lr_cl*A.grad.data)
         # train the lsqnonneg layers
         S_lst,pred = net(inputs)
-        loss = loss_func(net, inputs, S_lst,pred,label)
+        net.zero_grad()
+        loss = loss_func(inputs, S_lst,list(net.lsqnonneglst.parameters()),pred,label)
         loss.backward()
         loss_lst.append(loss.data)
         total_loss += loss.data
@@ -108,8 +96,8 @@ np.savez(save_PATH + save_filename,
 # In[20]:
 
 # plot the loss curve
-plt.plot(loss_lst)
-plt.show()
+#plt.plot(loss_lst)
+#plt.show()
 # Get the whole output of the whole dataset (running forward propagation on the whole dataset)
 S, pred = get_whole_output(net, dataset)
 # Get the accuracy
@@ -126,7 +114,9 @@ print(fro_error/fro_X)
 # In[ ]:
 
 # save the data
-np.savez(save_PATH + save_filename, S = S, pred = pred
+print(S)
+print(pred)
+np.savez(save_PATH + save_filename, S = S, pred = pred ,
          param_lst = list(net.parameters()), loss_lst = loss_lst)
 
 

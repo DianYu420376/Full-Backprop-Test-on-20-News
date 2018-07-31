@@ -50,7 +50,7 @@ dataset = sparsedata_L2(data*1000, Y, L50)
 
 # setting training parameters
 batchsize = 100
-epoch = 7
+epoch = 4
 lr_nmf = 5000
 lr_cl = 10
 loss_lst = []

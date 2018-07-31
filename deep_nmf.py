@@ -79,11 +79,12 @@ class Energy_Loss_Func(nn.Module):
         else:
             self.criterion2 = ClassificationLossCrossEntropy()
             
-    def forward(self, net, X, S_lst, pred = None, label = None, L = None):
-        total_reconstructionloss = self.criterion1(X, S_lst[0], net.lsqnonneglst[0].A)
-        depth = net.depth
+    def forward(self,  X, S_lst,A_lst,  pred = None, label = None, L = None):
+        total_reconstructionloss = self.criterion1(X, S_lst[0], A_lst[0])
+        depth = len(S_lst)
+        assert(len(A_lst) == depth)
         for i in range(1,depth-1):
-            total_reconstructionloss += self.criterion1(S_lst[i-1], S_lst[i], net.lsqnonneglst[i].A)
+            total_reconstructionloss += self.criterion1(S_lst[i-1], S_lst[i], A_lst[i])
         if pred is None:
             # unsupervised case
             assert(label is None and L is None)
